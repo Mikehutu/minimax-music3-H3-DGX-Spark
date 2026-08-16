@@ -70,7 +70,7 @@ def build_graph(caption: str, lyrics: str, duration: float, seed: int, cfg_scale
         "2": {
             "class_type": "UNETLoader",
             "inputs": {
-                "unet_name": "minimax_music3_dit_fp16.safetensors",
+                "unet_name": "minimax_music3_dit_int8_convrot.safetensors",
                 "weight_dtype": "default"
             }
         },

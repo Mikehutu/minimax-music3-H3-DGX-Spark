@@ -13,7 +13,7 @@ if [ -n "$PIDS" ]; then
 fi
 
 # Force cleanup if still running
-pkill -f "ComfyUI-music3/main.py" 2>/dev/null || true
+pkill -f "ComfyUI/main.py" 2>/dev/null || true
 sleep 1
 
 if lsof -i :"$PORT" >/dev/null 2>&1; then

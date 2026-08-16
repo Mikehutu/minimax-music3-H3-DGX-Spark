@@ -3,7 +3,7 @@ set -e
 
 HOST="${1:-http://127.0.0.1:8188}"
 echo "=================================================="
-echo " ComfyUI MiniMax Music3 Cluster Status"
+echo " ComfyUI Cluster Status"
 echo " Target: $HOST"
 echo "=================================================="
 
@@ -22,6 +22,6 @@ for k in music_nodes:
 "
 else
     echo "[STATUS] OFFLINE or UNREACHABLE"
-    echo "[HINT] Verify target IP, port, or launch server locally using scripts/start-comfyui-music3.sh"
+    echo "[HINT] Verify target IP, port, or launch server locally using scripts/start-comfyui.sh"
     exit 1
 fi
