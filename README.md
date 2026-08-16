@@ -98,6 +98,56 @@ bash scripts/start-comfyui.sh
 python3 h3/generate-video.py --prompt "a calm ocean wave at dusk, photorealistic" --duration 5 --prefix my_clip
 ```
 
+### H3 usage & options
+
+`h3/generate-video.py` submits an H3 ReferenceToVideo graph to the running
+ComfyUI. It is ENV-driven (respects `COMFY_HOST`, `COMFY_OUTPUT_DIR`, and
+`H3_UNET / H3_CLIP / H3_VAE / H3_AUDIO_VAE` overrides).
+
+```
+python3 h3/generate-video.py \
+  --prompt "<integrated_multimodal_description>..." \
+  --duration 5 \                    # seconds; rounded UP to H3's 17n+5 grid
+  --width 1280 --height 720 \       # default 1280x720
+  --seed 42 --steps 20 \            # steps default 20
+  --prefix my_clip \                # output filename prefix
+  --reference img.png               # repeatable; filenames as exposed in the
+                                    # ComfyUI input dir (== a local path in input/)
+```
+
+- **No reference needed**: with no `--reference`, a minimal blank frame is used
+  so the graph validates — good for quick style tests.
+- **Use references for control**: H3 preserves *identity & continuity* best when
+  you supply character/product/scene references and describe them in the prompt.
+  Reference pictures ARE the anchor; subjects not referenced are where H3 can
+  drift between shots. `ref_image_size` defaults to `max`.
+- **Frame grid**: H3 generates on a `17n+5` frame grid at 24 FPS.
+  `--duration` is rounded **up** to the next valid count (e.g. 5s → 124 frames
+  = 17·7+5 ≈ 5.17s). A typical short clip is 120–366 frames.
+- **Prompt format**: use the `integrated_multimodal_description:` prefix and a
+  structured block — an 8K/photoreal style line, setting, per-shot `[Shot N]`
+  blocks with `[timestamp]` hard cuts and `<d>[Lang] ...</d>` dialogue, then
+  `overall_soundscape:` (SFX) and `non_diegetic_music:` (score). See
+  `docs/PROMPT_LYRICS_GUIDE.md` for the tokenizer / caption-vs-lyrics split on
+  Music3 and the analogous structured-prompt guidance for H3 in the H3 example
+  scripts.
+- **Timing**: a 5s / 720p clip is ~7–8 min end-to-end under heavy co-tenant
+  load on a DGX Spark GB10 (AR encoder + 20 diffusion steps dominate); much
+  faster standalone. Novel-content video is compute-bound; don't mistake
+  progress stalls for hangs on shared (co-tenant) nodes.
+
+### H3 model variants
+
+| Model | Size | Used? |
+| :--- | :--- | :--- |
+| `minimax_h3_fl2va_pruned_int8_convrot` | ~20 GB | ✅ default (int8) |
+| `minimax_h3_fl2va_pruned_bf16` | ~38 GB | ⚠️ opt-in (max fidelity) |
+| `qwen3vl_32b_minimax_h3_nvfp4_awq` (text encoder) | ~15 GB | ✅ (NVFP4-AWQ) |
+| `minimax_h3_video_vae_fp16` | ~4.9 GB | ✅ |
+| `minimax_h3_audio_vae_fp32` | ~0.6 GB | ✅ |
+| `minimax_h3_ref2va_pruned_*` (reference VAE) | ~38 GB | only for reference-driven workflows |
+
+
 ### One-shot bootstrap (either family)
 
 ```bash
