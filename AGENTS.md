@@ -6,6 +6,25 @@ Everything is ENV-driven and portable — no personal hostnames, IPs, or paths. 
 
 ---
 
+## Fresh-install prerequisites (read first — do NOT skip)
+
+- **Newest ComfyUI required — the MiniMax nodes live in ComfyUI core**, not a
+  separately-installed custom node: `comfy_extras/nodes_minimax_music.py` and
+  `nodes_minimax_h3.py`. An outdated ComfyUI gives "node type not found".
+  `setup-env.sh` clones upstream; use the latest release, never an old tag.
+- **Disk**: music3 ≈ 11.5 GB (int8 DiT 2.5 + TE 8.6 + VAE 0.2) + ~3 GB ComfyUI/venv → plan ≥ 25 GB. h3 ≈ 41 GB (or ~80 GB with bf16/ref2va variants).
+- **GPU**: NVIDIA required (32 GB+ for full durations). Unified-memory DGX
+  Spark is primary target. CPU-only is impractically slow.
+- **System**: Linux, CUDA 12.1+/13.0+, Python 3.10–3.12, ffmpeg, git.
+
+## Verification (never claim success without evidence)
+
+- After `setup-env.sh`: `ls` the family model dirs.
+- `scripts/status-comfyui.sh` must show `MiniMaxMusic3TextEncode` (music3) or
+  `MiniMaxH3ReferenceToVideo` (h3) under AVAILABLE — proves the core nodes.
+- Run the family smoke test; confirm the output exists and plays via
+  `ffprobe`/`ffmpeg`. Report real tool output, not "it should work."
+
 ## Goal & Zero-to-Working Contract
 
 - **Families**: `music3` (text-to-music) and `h3` (text/image-to-video).

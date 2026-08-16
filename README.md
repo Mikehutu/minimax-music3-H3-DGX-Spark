@@ -66,6 +66,9 @@ mini-max-dgx-spark/
 
 - OS: Linux (Ubuntu 20.04+, Debian, Fedora, Arch, WSL2)
 - CUDA 12.1+ / 13.0+, Python 3.10–3.12, `ffmpeg`, `git`
+- **Newest ComfyUI release required** — the MiniMax Music3/H3 nodes are part of
+  ComfyUI core (`comfy_extras/`), not a separately-installed custom node. Do not
+  pin an old ComfyUI tag.
 
 ---
 
