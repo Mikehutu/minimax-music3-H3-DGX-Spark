@@ -1,0 +1,76 @@
+{
+  "1": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "minimax_music3_text_encoder_pruned_int8_convrot.safetensors",
+      "type": "minimax"
+    }
+  },
+  "2": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "minimax_music3_dit_fp16.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "minimax_music3_dav.safetensors"
+    }
+  },
+  "4": {
+    "class_type": "MiniMaxMusic3TextEncode",
+    "inputs": {
+      "clip": ["1", 0],
+      "caption": "Modern hard-hitting trap rap beat with aggressive 808 basslines, tight hi-hat rolls, dark melodic piano, energetic male rap vocals with fast rhythmic cadence",
+      "lyrics": "[intro]\nYeah, turn the beat up\nMic check one two, let's get it\n\n[verse 1]\nStep in the cypher, flow sharper than steel\nLiving in the matrix but the passion is real\nCode on the screen, rhythm pumping through veins\nTurning every single obstacle to digital gains\n\n[chorus]\nWe never slow down, we ride with the sound\nHeavy bass booming when we shake the whole ground\nCrown on the vision, no limit in sight\nSpitting pure lightning through the dark of the night\n\n[outro]\nYeah, that's how we do it\nAntigravity flow, signing off",
+      "seed": 777,
+      "max_duration": 35.0,
+      "cfg_scale": 1.8,
+      "top_k": 50
+    }
+  },
+  "5": {
+    "class_type": "EmptyMiniMaxMusic3LatentAudio",
+    "inputs": {
+      "seconds": ["4", 1],
+      "batch_size": 1
+    }
+  },
+  "6": {
+    "class_type": "ConditioningZeroOut",
+    "inputs": {
+      "conditioning": ["4", 0]
+    }
+  },
+  "7": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": ["2", 0],
+      "positive": ["4", 0],
+      "negative": ["6", 0],
+      "latent_image": ["5", 0],
+      "seed": 777,
+      "steps": 25,
+      "cfg": 1.0,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1.0
+    }
+  },
+  "8": {
+    "class_type": "VAEDecodeAudio",
+    "inputs": {
+      "samples": ["7", 0],
+      "vae": ["3", 0]
+    }
+  },
+  "9": {
+    "class_type": "SaveAudio",
+    "inputs": {
+      "audio": ["8", 0],
+      "filename_prefix": "rap_beat"
+    }
+  }
+}

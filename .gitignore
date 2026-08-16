@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+output/
+.cache/
+.env.local
+.DS_Store
+
+# Include curated demo examples
+!examples/audio/*.mp3
+!examples/video/*.mp4
