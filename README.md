@@ -48,10 +48,21 @@ mini-max-dgx-spark/
 
 | Hardware | VRAM / Mem | Supported |
 | :--- | :--- | :--- |
-| NVIDIA DGX Spark GB10 | 121 GB unified | ✅ primary target |
-| H100 / A100 / L40S | 40–80 GB | ✅ |
+| NVIDIA DGX Spark GB10 | 121 GB unified | ✅ primary target (fully tested) |
+| NVIDIA RTX PRO 6000 (Blackwell) | 96 GB | ✅ full durations |
+| NVIDIA RTX 6000 / RTX A6000 Ada | 48 GB | ✅ full durations |
+| H100 / A100 / L40S | 40–80 GB | ✅ full durations |
+| NVIDIA RTX 5090 (Blackwell) | 32 GB | ✅ full durations |
 | RTX 4090 / 3090 | 24 GB | ✅ (≤60–120s) |
 | RTX 4080/3080/4070 | 12–16 GB | ⚠️ (≤35s) |
+
+> Capacities for non-DGX cards are **conservative estimates based on VRAM**, not
+> benchmarked timings — only the DGX Spark GB10 has been measured end-to-end in
+> this repo. The int8 + fp16 DiT and int8 text-encoder are VRAM-light enough
+> that 32 GB+ cards should handle full-duration (≤35s co-tenant) comfortably.
+> A ~10–60s clip needs roughly 4–15 GB peak under normal load, so 32 GB+ is
+> ample; quality is identical across hardware (it's compute, not VRAM-bound,
+> on non-unified cards).
 
 - OS: Linux (Ubuntu 20.04+, Debian, Fedora, Arch, WSL2)
 - CUDA 12.1+ / 13.0+, Python 3.10–3.12, `ffmpeg`, `git`
