@@ -6,7 +6,7 @@ This guide details how **MiniMax Music3** processes style prompts versus lyrics,
 
 ## 🧠 1. How MiniMax Music3 Tokenization Works
 
-Behind the scenes in [`comfy/ldm/minimax_music/prompt.py`](file://${COMFY_DIR:-$HOME/ComfyUI-music3}/comfy/ldm/minimax_music/prompt.py), the text encoder wraps your inputs into a strict token schema:
+Behind the scenes in [`comfy/ldm/minimax_music/prompt.py`](file://${COMFY_DIR:-$HOME/ComfyUI}/comfy/ldm/minimax_music/prompt.py), the text encoder wraps your inputs into a strict token schema:
 
 ```text
 <|im_start|><|caption_start|>{caption}<|caption_end|><|lyrics_start|>[start]

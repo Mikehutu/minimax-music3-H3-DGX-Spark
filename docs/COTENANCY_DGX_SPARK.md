@@ -46,7 +46,7 @@ During live testing on the active cluster, we established the exact **safe opera
 ## 4. Production Launch Flags
 
 ```bash
-${PYTHON_BIN:-$HOME/ComfyUI/comfyui-env/bin/python} ${COMFY_DIR:-$HOME/ComfyUI-music3}/main.py \
+${PYTHON_BIN:-$HOME/ComfyUI/comfyui-env/bin/python} ${COMFY_DIR:-$HOME/ComfyUI}/main.py \
   --listen 0.0.0.0 \
   --port 8188 \
   --disable-pinned-memory \

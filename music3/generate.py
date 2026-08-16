@@ -34,7 +34,7 @@ def build_music3_graph(caption: str, lyrics: str, duration: float, seed: int, cf
         "2": {
             "class_type": "UNETLoader",
             "inputs": {
-                "unet_name": "minimax_music3_dit_fp16.safetensors",
+                "unet_name": "minimax_music3_dit_int8_convrot.safetensors",
                 "weight_dtype": "default"
             }
         },
@@ -119,7 +119,7 @@ def main():
     parser.add_argument("--top-k", type=int, default=50, help="Top-K token sampling")
     parser.add_argument("--steps", type=int, default=25, help="DiT sampling steps")
     parser.add_argument("--prefix", type=str, default="minimax_music3_track", help="Output filename prefix")
-    parser.add_argument("--format", choices=["flac", "mp3", "mp4", "all"], default="all", help="Output formats to produce")
+    parser.add_argument("--format", choices=["flac", "mp3", "mp4", "all"], default="mp3", help="Output formats to produce (default: mp3 only; use 'all' to also make an MP4 waveform video)")
     parser.add_argument("--cover", type=str, default=None, help="Cover image path for MP4 visualizer")
     parser.add_argument("--host", type=str, default=DEFAULT_HOST, help="ComfyUI server URL or IP:Port (e.g. http://<NODE_IP>:8188)")
     args = parser.parse_args()
@@ -133,7 +133,7 @@ def main():
     if not check_server(host):
         print(f"[ERROR] ComfyUI is not reachable at {host}.", file=sys.stderr)
         print(f"[HINT] If running across cluster nodes, verify the node IP and network route (e.g. curl {host}/system_stats).", file=sys.stderr)
-        print(f"[HINT] If running locally on this node, ensure server is started via scripts/start-comfyui-music3.sh.", file=sys.stderr)
+        print(f"[HINT] If running locally on this node, ensure server is started via scripts/start-comfyui.sh.", file=sys.stderr)
         sys.exit(1)
 
     graph = build_music3_graph(
@@ -198,8 +198,8 @@ def main():
 
     if output_filename and os.path.exists(output_filename):
         print(f"[OUTPUT] FLAC: {output_filename}")
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        conv_script = os.path.join(script_dir, "convert-media.py")
+        repo_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        conv_script = os.path.join(repo_dir, "scripts", "convert-media.py")
 
         if args.format in ("mp3", "all") and os.path.exists(conv_script):
             subprocess.run([sys.executable, conv_script, output_filename, "--mp3"], check=False)

@@ -1,30 +1,41 @@
 #!/usr/bin/env bash
 set -e
 
+# One-shot zero-to-working bootstrap for the MiniMax-DGX-Spark package.
+# Run:  bash scripts/bootstrap.sh [music3|h3]   (default: music3)
+# It: sets up the environment, downloads the family's models, starts ComfyUI,
+# and runs that family's smoke test. ENV-driven, no personal paths.
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
+FAMILY="${1:-music3}"
+
+# Load node profile if provided
+if [ -n "${NODE_PROFILE:-}" ] && [ -f "$NODE_PROFILE" ]; then
+  set -a; . "$NODE_PROFILE"; set +a
+fi
 
 echo "=================================================="
-echo " MiniMax Music3 Zero-to-Working One-Shot Bootstrap"
+echo " MiniMax ${FAMILY} Zero-to-Working One-Shot Bootstrap"
 echo "=================================================="
 
-# Step 1: Check and setup environment
 echo "[STEP 1/4] Setting up ComfyUI & Python environment..."
 bash "$SCRIPT_DIR/setup-env.sh"
 
-# Step 2: Download models from Hugging Face if missing
-echo "[STEP 2/4] Verifying and downloading model weights..."
-bash "$SCRIPT_DIR/download-models.sh"
+echo "[STEP 2/4] Verifying and downloading model weights (family=$FAMILY)..."
+bash "$SCRIPT_DIR/download-models.sh" "$FAMILY"
 
-# Step 3: Launch ComfyUI server with cluster-safe memory flags
 echo "[STEP 3/4] Launching ComfyUI server..."
-bash "$SCRIPT_DIR/start-comfyui-music3.sh" "$REPO_DIR/profiles/production.env"
+bash "$SCRIPT_DIR/start-comfyui.sh" "$REPO_DIR/profiles/nodes.env"
 
-# Step 4: Run end-to-end smoke test
-echo "[STEP 4/4] Executing verification smoke test (10s audio generation)..."
-bash "$SCRIPT_DIR/smoke-test.sh"
+echo "[STEP 4/4] Executing verification smoke test..."
+if [ "$FAMILY" = "h3" ]; then
+  ${PYTHON_BIN:-python3} "$REPO_DIR/h3/generate-video.py" --prompt "a calm ocean wave at dusk, photorealistic" --duration 5 --prefix smoke_test --host "${COMFY_HOST:-http://127.0.0.1:8188}"
+else
+  bash "$REPO_DIR/music3/smoke-test.sh"
+fi
 
 echo "=================================================="
-echo "[SUCCESS] Zero-to-working bootstrap complete!"
-echo "ComfyUI MiniMax Music3 is online and ready for production."
+echo "[SUCCESS] Zero-to-working bootstrap complete for $FAMILY!"
+echo "ComfyUI MiniMax is online and ready."
 echo "=================================================="
