@@ -4,10 +4,10 @@ A clean, portable toolkit for running **MiniMax Music3** (text-to-music) and
 **MiniMax H3** (text/image-to-video) through ComfyUI, optimized for and
 documented against **NVIDIA DGX Spark (GB10 / 121 GB unified memory)**.
 
-Designed to be **fully portable** — no personal hostnames, paths, or IPs are
-hardcoded. Everything is ENV-driven. A dual-DGX-Spark co-tenant topology (one
-node running a large LLM, another running ComfyUI for generation) is supported
-as a documented profile, not a requirement.
+A dual-DGX-Spark co-tenant topology is supported as a documented profile, not a
+requirement: **DeepSeek-V4-Flash runs tensor-parallel across both nodes (TP2)**,
+while **ComfyUI (Music3 + H3) runs on one node** in the remaining unified-memory
+headroom.
 
 ---
 
@@ -168,8 +168,9 @@ machine layout; defaults assume a single node.
 # Single node (default): everything local
 source profiles/nodes.env
 
-# Dual-node co-tenancy example (documented; not required): a large LLM on one
-# DGX Spark, ComfyUI for generation on another, sharing 121 GB unified memory.
+# Dual-node co-tenancy example (documented; not required): DeepSeek-V4-Flash
+# runs TP2 across both nodes; ComfyUI (Music3 + H3) on one node in the
+# remaining 121 GB unified-memory headroom.
 export LLM_NODE_IP=10.0.0.5          # example
 source profiles/nodes.env
 ```

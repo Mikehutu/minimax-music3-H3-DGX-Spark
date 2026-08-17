@@ -2,7 +2,7 @@
 
 Ready-to-run execution contract for Cursor, Hermes, AGY, Claude, and human operators. This package runs **MiniMax Music3** (text-to-music) and **MiniMax H3** (text/image-to-video) through **ComfyUI**, primarily on **NVIDIA DGX Spark (GB10 / 121 GB unified memory)**.
 
-Everything is ENV-driven and portable — no personal hostnames, IPs, or paths. A dual-Spark co-tenant split (LLM on one node, ComfyUI on another) is a documented profile, not a requirement.
+The package is portable and ENV-driven. A dual-Spark co-tenant split (DeepSeek TP2 across both nodes; ComfyUI Music3+H3 on one node) is a documented profile, not a requirement.
 
 ---
 
@@ -67,9 +67,9 @@ Source `profiles/nodes.env` to define topology (single or dual node).
 Defaults assume single node. ENV knobs: `COMFY_HOST`, `COMFY_DIR`,
 `COMFY_OUTPUT_DIR`, `PYTHON_BIN`, `MODEL_ROOT`, `PORT`, `HOST`, `EXTRA_FLAGS`.
 
-For dual-Spark / co-tenancy (a large LLM sharing unified memory on another
-node), see `docs/COTENANCY_DGX_SPARK.md` and do NOT set the LLM node's
-hostname — use its port/IP via ENV.
+For dual-Spark / co-tenancy (DeepSeek-V4-Flash TP2 across both nodes; ComfyUI
+Music3+H3 on one node in remaining headroom), see `docs/COTENANCY_DGX_SPARK.md`
+and do NOT set the LLM node's hostname — use its port/IP via ENV.
 
 ## Canonical Hyperparameters
 
