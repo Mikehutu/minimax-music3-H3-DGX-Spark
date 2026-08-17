@@ -95,6 +95,13 @@ python3 music3/generate.py --caption "90s boom-bap hip-hop, punchy kick, dusty h
   --duration 30.0 --prefix my_track --format mp3
 ```
 
+> ⚠️ **Disconnects don't cancel a queued job.** Co-tenant generation can outlast
+> your SSH/session; if the client dies before it produces the MP3, ComfyUI
+> still finishes and writes the **FLAC**. If you end up with FLAC and no MP3,
+> run `python3 scripts/convert-watchdog.py --prompt-id <ID> --format mp3`
+> (survives disconnects) or convert manually. A plain `generate.py` client that
+> times out will **not** have converted — post-processing runs client-side.
+
 ## Quick Start (h3)
 
 ```bash
