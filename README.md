@@ -46,6 +46,11 @@ mini-max-dgx-spark/
 
 ## Hardware & Prerequisites
 
+> The VRAM table below is **Music3 audio generation only** — it describes peak
+> VRAM during text-to-music, not H3 video. H3 uses a different model stack
+> (a ~20 GB int8 UNet + ~15 GB text encoder + VAE) and is far more
+> compute/duration-bound, so do not extrapolate these figures to H3 clips.
+
 | Hardware | VRAM / Mem | Supported |
 | :--- | :--- | :--- |
 | NVIDIA DGX Spark GB10 | 121 GB unified | ✅ primary target (fully tested) |
