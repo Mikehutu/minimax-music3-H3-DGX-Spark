@@ -115,6 +115,13 @@ H3 defaults: `MiniMaxH3ReferenceToVideo`, `BasicScheduler` steps 20,
 | `scripts/status-comfyui.sh` | server status / node check |
 | `scripts/convert-media.py` | FLAC -> MP3 / MP4 conversion |
 | `scripts/convert-watchdog.py` | disconnect-safe auto-convert |
+
+> ⚠️ **Co-tenant generations can outlast an SSH/client session.** A disconnected
+> client won't run the post-processing step — you'll get the FLAC but no MP3.
+> When that happens, either run the watchdog (`scripts/convert-watchdog.py`
+> `--prompt-id <ID> --format mp3`) or convert manually. Do not submit a second
+> job assuming the first was lost.
+
 | `music3/generate.py` | music3 text-to-music CLI |
 | `music3/bench_styles.py` | multi-genre benchmark |
 | `h3/generate-video.py` | h3 text/image-to-video CLI |
