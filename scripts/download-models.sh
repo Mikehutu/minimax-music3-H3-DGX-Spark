@@ -106,3 +106,38 @@ fi
 
 echo "[SUCCESS] All $FAMILY checkpoints verified in $MODEL_DIR!"
 ls -lh "$MODEL_DIR"/diffusion_models/* "$MODEL_DIR"/text_encoders/* "$MODEL_DIR"/vae/*
+
+# --- Optional H3 Turbo LoRA (lightx2v collection, separate HF repo) ---
+#   Distilled 20->4 NFE. Consumed by h3/generate-video.py --lora as a
+#   LoraLoaderModelOnly. Not part of the base H3 model, so opt-in download.
+if [ "$FAMILY" = "h3" ]; then
+  LORA_REPO="${H3_LORA_REPO:-lightx2v/Minimax-h3-Turbo}"
+  LORA_DIR="${3:-${LORA_DIR:-$MODEL_ROOT/loras}}"
+  LORA_FILE="minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors"
+  LORA="$LORA_DIR/$LORA_FILE"
+  if [ -f "$LORA" ]; then
+    echo "[INFO] Turbo LoRA already present: $LORA"
+  else
+    mkdir -p "$LORA_DIR"
+    echo "[INFO] Downloading H3 Turbo LoRA ($LORA_FILE, ~1.9 GB) from $LORA_REPO..."
+    if command -v hf >/dev/null 2>&1; then
+      hf download "$LORA_REPO" "$LORA_FILE" --local-dir "$LORA_DIR"
+    elif command -v huggingface-cli >/dev/null 2>&1; then
+      huggingface-cli download "$LORA_REPO" "$LORA_FILE" --local-dir "$LORA_DIR"
+    else
+      python3 - "$LORA_REPO" "$LORA_DIR" "$LORA_FILE" <<'PYEOF2'
+import os, sys
+from huggingface_hub import hf_hub_download
+repo_id, target_dir, f = sys.argv[1], sys.argv[2], sys.argv[3]
+out = os.path.join(target_dir, f)
+if not os.path.exists(out):
+    print(f"[INFO] Downloading {f}...")
+    hf_hub_download(repo_id=repo_id, filename=f, local_dir=target_dir)
+else:
+    print(f"[INFO] Already exists: {f}")
+PYEOF2
+    fi
+    echo "[SUCCESS] Turbo LoRA verified: $LORA"
+    ls -lh "$LORA"
+  fi
+fi

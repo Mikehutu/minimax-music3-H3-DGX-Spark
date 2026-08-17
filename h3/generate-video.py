@@ -32,13 +32,21 @@ def frames_for_seconds(seconds, fps=24):
 
 
 def build(prompt, width, height, length, refs, seed, steps,
-          unet, clip, video_vae, audio_vae, prefix, ref_img_size="max"):
+          unet, clip, video_vae, audio_vae, prefix, ref_img_size="max",
+          lora=None):
     g = {
         "6": {"class_type": "UNETLoader", "inputs": {"unet_name": unet, "weight_dtype": "default"}},
         "13": {"class_type": "CLIPLoader", "inputs": {"clip_name": clip, "type": "minimax", "device": "default"}},
         "11": {"class_type": "VAELoader", "inputs": {"vae_name": video_vae}},
         "24": {"class_type": "VAELoader", "inputs": {"vae_name": audio_vae}},
     }
+    # Optional turbo LoRA (distilled 20->4 NFE). If set, chain it onto the
+    # model right after the UNETLoader; guider/scheduler then consume it.
+    model_src = "6"
+    if lora:
+        g["19"] = {"class_type": "LoraLoaderModelOnly",
+                   "inputs": {"model": ["6", 0], "lora_name": lora, "strength_model": 1.0}}
+        model_src = "19"
     ref_node_ids = []
     for i, (path, name) in enumerate(refs):
         nid = str(201 + i)
@@ -55,9 +63,9 @@ def build(prompt, width, height, length, refs, seed, steps,
                            "width": width, "height": height, "length": length,
                            "ref_image_size": ref_img_size}}
     g.update({
-        "16": {"class_type": "BasicGuider", "inputs": {"model": ["6", 0], "conditioning": ["230", 0]}},
+        "16": {"class_type": "BasicGuider", "inputs": {"model": [model_src, 0], "conditioning": ["230", 0]}},
         "17": {"class_type": "KSamplerSelect", "inputs": {"sampler_name": "res_multistep"}},
-        "9": {"class_type": "BasicScheduler", "inputs": {"model": ["6", 0], "scheduler": "simple", "steps": steps, "denoise": 1.0}},
+        "9": {"class_type": "BasicScheduler", "inputs": {"model": [model_src, 0], "scheduler": "simple", "steps": steps, "denoise": 1.0}},
         "15": {"class_type": "RandomNoise", "inputs": {"noise_seed": seed}},
         "14": {"class_type": "SamplerCustomAdvanced", "inputs": {"noise": ["15", 0], "guider": ["16", 0], "sampler": ["17", 0], "sigmas": ["9", 0], "latent_image": ["230", 1]}},
         "10": {"class_type": "VAEDecode", "inputs": {"samples": ["14", 0], "vae": ["11", 0]}},
@@ -76,7 +84,9 @@ def main():
     ap.add_argument("--width", type=int, default=1280)
     ap.add_argument("--height", type=int, default=720)
     ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument("--steps", type=int, default=20)
+    ap.add_argument("--steps", type=int, default=os.environ.get("H3_STEPS", 20))
+    ap.add_argument("--lora", default=os.environ.get("H3_LORA", ""),
+                    help="turbo LoRA filename (e.g. minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors); auto-defaults steps to 4 when set")
     ap.add_argument("--prefix", default="h3_clip")
     ap.add_argument("--host", default=os.environ.get("COMFY_HOST", "http://127.0.0.1:8188"))
     ap.add_argument("--output-dir", default=os.environ.get("COMFY_OUTPUT_DIR", os.path.expanduser("~/ComfyUI/output")))
@@ -92,11 +102,14 @@ def main():
 
     host = normalize_host(args.host)
     length = frames_for_seconds(args.duration, int(args.files_per_second))
-    print(f"[H3] duration {args.duration}s -> {length} frames @{args.files_per_second:.0f}fps, res {args.width}x{args.height}", flush=True)
+    # A requested turbo LoRA implies the distilled 4-step schedule.
+    steps = 4 if (args.lora and args.steps == 20) else args.steps
+    print(f"[H3] duration {args.duration}s -> {length} frames @{args.files_per_second:.0f}fps, res {args.width}x{args.height}, steps {steps}"
+          + (f" + turbo LoRA {args.lora}" if args.lora else ""), flush=True)
 
     refs = [(None, r) for r in args.reference]
-    graph = build(args.prompt, args.width, args.height, length, refs, args.seed, args.steps,
-                  args.unet, args.clip, args.video_vae, args.audio_vae, args.prefix)
+    graph = build(args.prompt, args.width, args.height, length, refs, args.seed, steps,
+                  args.unet, args.clip, args.video_vae, args.audio_vae, args.prefix, lora=args.lora)
 
     t0 = time.time()
     body = json.dumps({"prompt": graph}).encode()
