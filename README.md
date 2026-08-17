@@ -53,7 +53,7 @@ mini-max-dgx-spark/
 
 | Hardware | VRAM / Mem | Supported |
 | :--- | :--- | :--- |
-| NVIDIA DGX Spark GB10 | 121 GB unified | ✅ primary target (fully tested) |
+| NVIDIA DGX Spark GB10 | 128 GB unified | ✅ primary target (fully tested) |
 | NVIDIA RTX PRO 6000 (Blackwell) | 96 GB | ✅ full durations |
 | NVIDIA RTX 6000 / RTX A6000 Ada | 48 GB | ✅ full durations |
 | H100 / A100 / L40S | 40–80 GB | ✅ full durations |
