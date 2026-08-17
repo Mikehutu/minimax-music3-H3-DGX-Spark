@@ -73,6 +73,13 @@ nohup python3 scripts/convert-watchdog.py --prompt-id <ID> --host "$COMFY_HOST" 
 ```
 The watchdog polls `/history/<ID>` and converts when done, surviving disconnects.
 
+> ⚠️ **If you get a FLAC but no MP3/MP4, the generation SUCCEEDED — the
+> post-processing step did not.** Post-processing runs client-side, so a
+> disconnected/timed-out session yields the ComfyUI output (FLAC) but the
+> conversion never ran. Do NOT resubmit. Run the watchdog or convert manually:
+> `python3 scripts/convert-watchdog.py --prompt-id <ID> --format mp3`. The
+> prompt ID is printed on success (or fetch it from `$COMFY_HOST/queue`).
+
 ## Pitfalls
 
 1. **Get the prompt ID** — `generate*.py` prints it on success. If the client
