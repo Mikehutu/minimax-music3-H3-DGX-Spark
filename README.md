@@ -13,29 +13,25 @@ headroom.
 
 ## Updates
 
-### 2026-08-17 — H3 Turbo LoRA (optional, LoRA-only) — measured on gx10-b (co-tenant)
+### 2026-08-17 — H3 Turbo LoRA (optional, LoRA-only)
 
 Added optional `--lora` support to `h3/generate-video.py`. **LoRA only** — it
 loads `minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors` (lightx2v
 `Minimax-h3-Turbo`, distilled 20→4 NFE) via a `LoraLoaderModelOnly` node and
-auto-drops `steps` to 4. It does **not** include the identity/extender nodes.
-Download via `scripts/download-models.sh h3` (drops the ~1.9 GB file into
-`loras/`), then run with `--lora <filename>`.
+auto-drops `steps` to 4. Download via `scripts/download-models.sh h3` (drops the
+~1.9 GB file into `loras/`), then run with `--lora <filename>`.
 
-**Measured on gx10-b, co-tenant with DeepSeek (same node, back-to-back queue):**
+**Quality (validated on gx10-b, 2026-08-17):** the turbo LoRA is what makes 4-step
+reference-to-video (ref2v) viable. A controlled A/B at identical 1344x768, same
+ref, same prompt, same 4 steps, differing only in LoRA, showed the 4-step baseline
+(no LoRA) is poor while the 4-step turbo LoRA is usable. **For fast reference UGC,
+use `--lora` (do not run bare `--steps 4`).** An earlier low-res Extender test that
+suggested turbo degraded quality was confounded; this was corrected.
 
-| Config | Sampling (diffusion) | Total wall | Notes |
-| :--- | :--- | :--- | :--- |
-| Baseline 20-step | 20×~19.6s/it ≈ **391s** | **455.9s** (7.6 min) | matches documented 7.5-min baseline |
-| Turbo 4-step | 4×~30.2s/it ≈ **121s** | 650s* | *includes queue wait + cold reload |
-
-**Result:** diffusion (sampling) stage is ~**3.3x faster** with Turbo (391s → 121s). Total wall-clock in this co-tenant test was dominated by queue serialization and model reload (650s includes waiting behind the baseline job and a cold model load), not by the LoRA.
-
-**Caveat (contention):** per-it time is *higher* under Turbo (30s/it vs 19.6s/it baseline) because LoRA fusion runs on the int8 pruned base and co-tenant memory-bandwidth contention varies. The speedup is real but bounded by co-tenancy — expect the full ~5x only on a quiet/standalone node, where per-it time should drop toward the ~36s-it-free-load level (observed in isolated runs) while still using 4 steps.
-
-Both outputs validated: identical 5.167s duration at 24fps, H.264, muxed audio.
-
-**QUALITY VERDICT (corrected 2026-08-17):** controlled A/B at identical 1344x768 + same ref + same prompt + same 4 steps, differing ONLY in LoRA: the **4-step NO-LoRA baseline is very bad; the 4-step turbo LoRA is usable.** The LoRA is what makes 4-step reference-to-video viable. An earlier Extender A/B (704x480 + tritant Extender) misleadingly suggested turbo degraded UGC — that was confounded; at proper resolution + the author's core `MiniMaxH3ReferenceToVideo` node, the LoRA HELPS. Use `--lora` for fast reference UGC (not bare `--steps 4`).
+Both outputs validated: identical proper-res clips, same refs/prompt, only LoRA
+differing. Exact timings are environment-dependent (co-tenant memory contention +
+model cold-start dominate wall-clock); the LoRA is a quality enabler at 4 steps,
+not primarily a speed knob.
 
 ---
 
@@ -186,13 +182,10 @@ python3 h3/generate-video.py \
   **The 4-step baseline is VERY BAD; the 4-step turbo LoRA is usable.** Controlled
   A/B at identical 1344x768 + same ref + same prompt + same 4 steps (only LoRA
   differed): the no-LoRA 4-step render was poor quality, the LoRA 4-step was OK.
-  The LoRA is what makes 4-step ref2v viable (regular model needs ~20 steps).
-
-  **LOFT NOTE - reconcile this with the earlier (WRONG) UGC-degrades claim.** An
-  earlier Extender A/B at 704x480 suggested turbo degraded UGC; that was
-  confounded (low res + tritant Extender, not the author's core node). At proper
-  res + core node + same steps, the LoRA HELPS. Use `--lora` for fast UGC, not
-  bare `--steps 4`.
+  The LoRA is what makes 4-step ref2v viable (regular model needs ~20 steps); use
+  `--lora` for fast reference UGC, not bare `--steps 4`. (An earlier low-res,
+  different-node test that suggested turbo degraded quality was confounded and
+  has been corrected.)
 
   `--lora` downloads via `scripts/download-models.sh h3` (~1.9 GB into loras/).
   See https://github.com/ModelTC/Minimax-H3-Turbo — Ref2VA 4-step (this is the
